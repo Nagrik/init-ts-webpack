@@ -1,8 +1,8 @@
 name: CI/CD Example # workflow name
-
-on: # attribute determines how workflow gets triggered
-  push: # triggers on a`push` to the `main` branch
-    branches: [ master ]
+on:
+  push:
+    branches:
+      - master
   workflow_dispatch: # triggers manually
 
 jobs:
