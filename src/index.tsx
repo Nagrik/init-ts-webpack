@@ -1,5 +1,5 @@
 import React, { StrictMode } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, HashRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import ReactDOM from 'react-dom';
 import { ConnectedRouter } from 'connected-react-router';
@@ -10,13 +10,13 @@ import App from './App';
 
 ReactDOM.render(
   <StrictMode>
-    <BrowserRouter>
+    <HashRouter>
       <Provider store={store}>
         <ConnectedRouter history={history}>
           <App />
         </ConnectedRouter>
       </Provider>
-    </BrowserRouter>
+    </HashRouter>
   </StrictMode>,
   document.getElementById('root'),
 );
