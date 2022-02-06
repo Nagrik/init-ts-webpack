@@ -16,7 +16,7 @@ function App() {
   return (
     <>
       <div>
-        ИНИТ
+        ИНИТ :Х
       </div>
       <div>
         {JSON.stringify(selectInitialData)}
