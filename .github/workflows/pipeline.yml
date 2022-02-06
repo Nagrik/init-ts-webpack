@@ -1,31 +1,62 @@
-name: Docker Image CI
-on:
-  push:
-    branches:
-      - master
-      - dev
+name: CI/CD Example # workflow name
+
+on: # attribute determines how workflow gets triggered
+  push: # triggers on a`push` to the `main` branch
+    branches: [ main ]
+  workflow_dispatch: # triggers manually
+
 jobs:
-          master:
-            name: prod pipeline
-            runs-on: ubuntu-latest
-            if: github.ref == 'refs/heads/master'
-            env:
-              SSH_PRIVATE_KEY: ${{secrets.ACCESS_TOKEN}}
-              SSH_KEY_PATH: ${{ github.workspace }}/../private.key
-            steps:
-              - uses: actions/checkout@v2
-              - name: Create SSH key
-                run: |
-                  mkdir -p ~/.ssh/
-                  echo "$SSH_PRIVATE_KEY" > ../private.key
-                  sudo chmod 600 ../private.key
-                shell: bash
+  build: # job 1 identifier
+    name: Build
+    runs-on: ubuntu-latest
 
-              - name: Build the Docker image
-                run: docker build --build-arg BASE_URL=https://nagrik.github.io/init-ts-webpack/ -t dokku/init-ts-webpack:latest .
+    steps:
+      - name: Clone repo & checkout code
+        uses: actions/checkout@v2
+        # this action allows the runner to access your code by cloning it
 
-              - name: Save and upload Docker image
-                run: docker save dokku/init-ts-webpack:latest | bzip2 | ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no github@104.248.93.70 "bunzip2 | docker load"
+      - name: Install Node.js
+        uses: actions/setup-node@v2.4.0
+        # installs and sets up Node environment in our runner
+        with:
+          node-version: 14.x
 
-              - name: Dokku create, deploy and tag
-                run: ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no github@104.248.93.70 "dokku tags:create init-ts-webpack previous; dokku tags:deploy init-ts-webpack latest"
+      - name: Install NPM packages
+        run: npm ci
+        # similar to npm install, for automated environments
+
+      - name: Build project
+        run: npm run build # command to build project
+
+      - name: Run tests
+        run: npm run test # command to run tests
+
+      - name: Upload production-ready build files
+        uses: actions/upload-artifact@v2
+        # uploads build files to be accessible across jobs
+        with:
+          name: production
+          path: ./build
+
+  deploy: # job 2 identifier
+    name: Deploy
+    needs: build
+    # the build job must succeed in order to run this job
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        # downloads the uploaded build files
+        with:
+          name: production
+          path: ./build
+
+      - name: Deploy to Github pages
+        uses: crazy-max/ghaction-github-pages@v2
+        # action to deploy to GitHub Pages
+        with:
+          target_branch: gh-pages
+          build_dir: ./build
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }} # default secret for auth
