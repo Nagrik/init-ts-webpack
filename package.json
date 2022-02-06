@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "",
-  "homepage" : "https://nagrik.github.io/init-ts-webpack/",
+  "homepage" : "https://nagrik.github.io/init-ts-webpack",
   "scripts": {
     "start": "cross-env NODE_ENV=development && cross-env PORT=3000 && webpack serve",
     "build": "cross-env NODE_ENV=production webpack",
