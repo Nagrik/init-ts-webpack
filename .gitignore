@@ -10,8 +10,6 @@ build/
 
 .env
 
-package-lock.json
-
 # Compiled Java class files
 *.class
 
