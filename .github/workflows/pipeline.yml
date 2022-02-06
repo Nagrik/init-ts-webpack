@@ -1,0 +1,31 @@
+name: Docker Image CI
+on:
+  push:
+    branches:
+      - master
+      - dev
+jobs:
+          master:
+            name: prod pipeline
+            runs-on: ubuntu-latest
+            if: github.ref == 'refs/heads/master'
+            env:
+              SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
+              SSH_KEY_PATH: ${{ github.workspace }}/../private.key
+            steps:
+              - uses: actions/checkout@v2
+              - name: Create SSH key
+                run: |
+                  mkdir -p ~/.ssh/
+                  echo "$SSH_PRIVATE_KEY" > ../private.key
+                  sudo chmod 600 ../private.key
+                shell: bash
+
+              - name: Build the Docker image
+                run: docker build --build-arg BASE_URL=https://nagrik.github.io/init-ts-webpack/ -t dokku/init-ts-webpack:latest .
+
+              - name: Save and upload Docker image
+                run: docker save dokku/init-ts-webpack:latest | bzip2 | ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no github@104.248.93.70 "bunzip2 | docker load"
+
+              - name: Dokku create, deploy and tag
+                run: ssh -i $SSH_KEY_PATH -o StrictHostKeyChecking=no github@104.248.93.70 "dokku tags:create init-ts-webpack previous; dokku tags:deploy init-ts-webpack latest"
