@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "",
-  "homepage" : ".",
+  "homepage" : "https://nagrik.github.io/init-ts-webpack/",
   "scripts": {
     "start": "cross-env NODE_ENV=development && cross-env PORT=3000 && webpack serve",
     "build": "cross-env NODE_ENV=production webpack",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx ./",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "server": "node ."
   },
